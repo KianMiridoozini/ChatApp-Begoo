@@ -1,4 +1,3 @@
-
 import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
@@ -82,8 +81,11 @@ export const login = async (req, res) => {
         })
     }
 };
-export const logout = (req, res) => {
+export const logout = async (req, res) => {
     try {
+        if (req.user && req.user._id) {
+            await User.findByIdAndUpdate(req.user._id, { lastSeen: new Date() });
+        }
         res.cookie("jwt", "", { maxAge: 0 });
         res.status(200).json({
             message: "User logged out",

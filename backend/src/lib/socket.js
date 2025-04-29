@@ -39,6 +39,13 @@ io.on("connection", async (socket) => {
     socket.on("disconnect", async () => {
         console.log("A user disconnected", socket.id);
         delete userSocketMap[userId];
+        if (userId) {
+            try {
+                await User.findByIdAndUpdate(userId, { lastSeen: new Date() });
+            } catch (err) {
+                console.error("Error updating lastSeen on disconnect:", err);
+            }
+        }
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
         // Emit updated user list again (no exclusion)
         try {
@@ -46,6 +53,20 @@ io.on("connection", async (socket) => {
             io.emit("usersUpdated", users);
         } catch (err) {
             console.error("Error emitting usersUpdated:", err);
+        }
+    });
+
+    // Typing events
+    socket.on("typing", ({ to }) => {
+        const recieverSocketId = userSocketMap[to];
+        if (recieverSocketId) {
+            io.to(recieverSocketId).emit("typing", { from: userId });
+        }
+    });
+    socket.on("stopTyping", ({ to }) => {
+        const recieverSocketId = userSocketMap[to];
+        if (recieverSocketId) {
+            io.to(recieverSocketId).emit("stopTyping", { from: userId });
         }
     });
 }

@@ -1,3 +1,4 @@
+import { useAuthStore } from "../store/useAuthStore";
 import { useRef, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { Image, Send, X } from "lucide-react";
@@ -8,6 +9,18 @@ const MessageInput = () => {
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
     const { sendMessage } = useChatStore();
+    const { selectedUser } = useChatStore();
+    const { socket } = useAuthStore();
+    const typingTimeout = useRef();
+
+    const emitTyping = () => {
+        if (!socket || !selectedUser) return;
+        socket.emit("typing", { to: selectedUser._id });
+        clearTimeout(typingTimeout.current);
+        typingTimeout.current = setTimeout(() => {
+            socket.emit("stopTyping", { to: selectedUser._id });
+        }, 1500);
+    };
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -75,7 +88,13 @@ const MessageInput = () => {
                         className="w-full input input-bordered rounded-lg input-sm sm:input-md"
                         placeholder="Type a message..."
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={(e) => {
+                            setText(e.target.value);
+                            emitTyping();
+                        }}
+                        onBlur={() => {
+                            if (socket && selectedUser) socket.emit("stopTyping", { to: selectedUser._id });
+                        }}
                     />
                     <input
                         type="file"

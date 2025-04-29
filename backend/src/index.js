@@ -11,7 +11,6 @@ import path from "path";
 
 dotenv.config()
 
-app
 const PORT = process.env.PORT
 const __dirname = path.resolve();
 

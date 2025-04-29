@@ -5,18 +5,22 @@ import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { Users } from "lucide-react";
 
 const Sidebar = () => {
-    const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
-
-    const { onlineUsers } = useAuthStore();
+    const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading, unread } = useChatStore();
+    const { onlineUsers, authUser } = useAuthStore();
     const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
     useEffect(() => {
         getUsers();
+        // Subscribe to real-time user updates
+        useChatStore.getState().subscribeToUsers();
+        return () => {
+            useChatStore.getState().unsubscribeFromUsers();
+        };
     }, [getUsers]);
 
     const filteredUsers = showOnlineOnly
-        ? users.filter((user) => onlineUsers.includes(user._id))
-        : users;
+        ? users.filter((user) => onlineUsers.includes(user._id) && user._id !== authUser?._id)
+        : users.filter((user) => user._id !== authUser?._id);
 
     if (isUsersLoading) return <SidebarSkeleton />;
 
@@ -68,7 +72,15 @@ const Sidebar = () => {
 
                         {/* User info - only visible on larger screens */}
                         <div className="hidden lg:block text-left min-w-0">
-                            <div className="font-medium truncate">{user.fullName}</div>
+                            <div className="flex items-center gap-2">
+                                <div className="font-medium truncate">{user.fullName}</div>
+                                {unread[user._id] && (
+                                    <span
+                                        className="inline-block size-3 bg-primary rounded-full ring-2 ring-base-100 animate-pulse ml-1"
+                                        title="New message"
+                                    />
+                                )}
+                            </div>
                             <div className="text-sm text-zinc-400">
                                 {onlineUsers.includes(user._id) ? "Online" : "Offline"}
                             </div>

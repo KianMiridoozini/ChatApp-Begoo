@@ -11,6 +11,7 @@ export const useChatStore = create((set, get) => ({
     selectedUser: null,
     isUsersLoading: false,
     isMessagesLoading: false,
+    unread: {}, // { userId: true }
 
     getUsers: async () => {
         set({ isUsersLoading: true });
@@ -47,13 +48,17 @@ export const useChatStore = create((set, get) => ({
     },
 
     subscribeToMessages: () => {
-        const { selectedUser } = get()
+        const { selectedUser } = get();
         if (!selectedUser) return;
         const socket = useAuthStore.getState().socket;
 
         socket.on("newMessage", (newMessage) => {
-            const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id
+            const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
             if (!isMessageSentFromSelectedUser) {
+                // Mark as unread for sender
+                set((state) => ({
+                    unread: { ...state.unread, [newMessage.senderId]: true },
+                }));
                 return;
             }
             set({ messages: [...get().messages, newMessage] });
@@ -65,5 +70,27 @@ export const useChatStore = create((set, get) => ({
         socket.off("newMessage");
     },
 
-    setSelectedUser: (selectedUser) => set({ selectedUser }),
+    setSelectedUser: (selectedUser) => {
+        set((state) => {
+            // Clear unread for this user
+            const newUnread = { ...state.unread };
+            if (selectedUser && newUnread[selectedUser._id]) {
+                delete newUnread[selectedUser._id];
+            }
+            return { selectedUser, unread: newUnread };
+        });
+    },
+
+    subscribeToUsers: () => {
+        const socket = useAuthStore.getState().socket;
+        if (!socket) return;
+        socket.on("usersUpdated", (users) => {
+            set({ users });
+        });
+    },
+    unsubscribeFromUsers: () => {
+        const socket = useAuthStore.getState().socket;
+        if (!socket) return;
+        socket.off("usersUpdated");
+    },
 }))

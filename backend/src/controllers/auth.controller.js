@@ -44,7 +44,7 @@ export const signup = async (req, res) => {
             });
         }
     } catch (error) {
-        console.log("Error in signup controller", error);
+        // console.log("Error in signup controller", error);
         res.status(500).json({
             message: "Internal server error",
             error: error.message,
@@ -74,7 +74,7 @@ export const login = async (req, res) => {
             profilePic: user.profilePic,
         });
     } catch (error) {
-        console.log("Error in login controller", error);
+        // console.log("Error in login controller", error);
         res.status(500).json({
             message: "Internal server error",
             error: error.message,
@@ -91,7 +91,7 @@ export const logout = async (req, res) => {
             message: "User logged out",
         });
     } catch (error) {
-        console.log("Error in logout controller", error);
+        // console.log("Error in logout controller", error);
         res.status(500).json({
             message: "Internal server error",
             error: error.message,
@@ -113,7 +113,7 @@ export const updateProfile = async (req, res) => {
         const updatedUser = await User.findByIdAndUpdate(userId, { profilePic: uploadedResponse.secure_url }, { new: true })
         res.status(200).json(updatedUser)
     } catch (error) {
-        console.log("Error in updateProfile controller", error);
+        // console.log("Error in updateProfile controller", error);
         res.status(500).json({
             message: "Internal server error",
             error: error.message,
@@ -126,7 +126,7 @@ export const checkAuth = (req, res) => {
     try {
         res.status(200).json(req.user)
     } catch (error) {
-        console.log("Error in checkAuth controller", error);
+        // console.log("Error in checkAuth controller", error);
         res.status(500).json({
             message: "Internal server error",
             error: error.message,

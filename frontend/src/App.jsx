@@ -15,7 +15,7 @@ import { useThemeStore } from "./store/useThemeStore";
 import { useChatStore } from "./store/useChatStore";
 
 const App = () => {
-  const {authUser, checkAuth, isCheckingAuth, onlineUsers, socket} = useAuthStore();
+  const {authUser, checkAuth, isCheckingAuth, socket} = useAuthStore();
   const {theme} = useThemeStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { subscribeToGlobalEvents, unsubscribeFromGlobalEvents, loadSeenMessages } = useChatStore();
@@ -34,7 +34,7 @@ const App = () => {
     }
   }, [socket, authUser, subscribeToGlobalEvents, unsubscribeFromGlobalEvents, loadSeenMessages]);
 
-  console.log({onlineUsers})
+  // console.log({onlineUsers})
 
   if (isCheckingAuth && !authUser) return (
     <div className="flex items-center justify-center h-screen">

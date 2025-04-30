@@ -184,7 +184,7 @@ export const useChatStore = create((set, get) => ({
             if (senderId === authUser._id) return;
             
             // Debug logging to trace the values
-            console.log(`Unread update from ${senderId}: count=${count}`);
+            // console.log(`Unread update from ${senderId}: count=${count}`);
             
             set((state) => {
                 const newUnread = { ...state.unread };
